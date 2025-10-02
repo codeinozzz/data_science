@@ -1,0 +1,30 @@
+version: '3.8'
+
+services:
+  chromadb:
+    image: chromadb/chroma:0.4.15
+    container_name: music-chromadb
+    ports:
+      - "8000:8000"
+    volumes:
+      - chroma_data:/chroma/chroma
+    environment:
+      - IS_PERSISTENT=TRUE
+      - ANONYMIZED_TELEMETRY=FALSE
+
+  backend:
+    build: ./backend
+    container_name: music-backend
+    ports:
+      - "8001:8001"
+    volumes:
+      - ./backend/data:/app/data
+    environment:
+      - CHROMA_HOST=chromadb
+      - CHROMA_PORT=8000
+    depends_on:
+      - chromadb
+    command: sh -c "sleep 20 && python src/api/main.py"
+
+volumes:
+  chroma_data:

@@ -1,0 +1,6 @@
+black[jupyter]==25.9.0
+mypy==1.18.2
+pipdeptree==2.28.0
+pytest==8.4.2
+types-seaborn==0.13.2.20250914
+types-requests==2.32.4.20250913
