@@ -34,16 +34,16 @@ class ChromaStorage:
     ):
         embeddings_list = [emb.tolist() for emb in embeddings]
 
-        self.collection.add(embeddings=embeddings_list, metadatas=metadata, ids=ids)
+        self.collection.add(embeddings=embeddings_list, metadatas=metadata, ids=ids)  # type: ignore[arg-type]
 
     def search_similar(self, query_embedding: np.ndarray, n_results: int = 5) -> Dict:
         results = self.collection.query(
             query_embeddings=[query_embedding.tolist()], n_results=n_results
         )
-        return results
+        return results  # type: ignore[return-value]
 
     def get_all_samples(self) -> Dict:
-        return self.collection.get(include=["embeddings", "metadatas"])
+        return self.collection.get(include=["embeddings", "metadatas"])  # type: ignore[return-value]
 
     def count(self) -> int:
         return self.collection.count()

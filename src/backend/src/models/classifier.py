@@ -40,7 +40,7 @@ class GenreClassifier:
             "accuracy": report["accuracy"],
             "report": report,
             "confusion_matrix": conf_matrix.tolist(),
-            "classes": self.classes.tolist(),
+            "classes": self.classes.tolist() if self.classes is not None else [],
         }
 
     def predict(self, embeddings: np.ndarray) -> np.ndarray:
