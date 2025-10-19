@@ -1,0 +1,55 @@
+import pytest
+from fastapi.testclient import TestClient
+from unittest.mock import Mock, patch
+import sys
+from pathlib import Path
+
+sys.path.append(str(Path(__file__).parent.parent))
+
+
+@pytest.fixture
+def client():
+    from src.api.main import app
+    return TestClient(app)
+
+
+def test_root(client):
+    response = client.get("/")
+    assert response.status_code == 200
+    data = response.json()
+    assert "message" in data
+    assert "endpoints" in data
+
+
+def test_stats(client):
+    response = client.get("/stats")
+    assert response.status_code == 200
+    data = response.json()
+    assert "total_samples" in data
+    assert "genres" in data
+    assert "embedding_dimension" in data
+
+
+@patch('src.api.main.storage')
+@patch('src.api.main.processor')
+@patch('src.api.main.embedder')
+def test_search_endpoint(mock_embedder, mock_processor, mock_storage, client):
+    mock_storage.search_similar.return_value = {
+        "metadatas": [[{"filename": "test.mp3", "genre": "techno"}]],
+        "distances": [[0.123]]
+    }
+    
+    mock_processor.extract_features.return_value = {
+        "features": [0.1] * 45,
+        "metadata": {}
+    }
+    
+    mock_embedder.generate_embedding.return_value = [0.1] * 45
+    
+    files = {"file": ("test.mp3", b"fake audio data", "audio/mpeg")}
+    response = client.post("/search?n_results=5", files=files)
+    
+    assert response.status_code == 200
+    data = response.json()
+    assert "query" in data
+    assert "results" in data
