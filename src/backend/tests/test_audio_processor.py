@@ -15,7 +15,7 @@ def sample_audio():
         "duration": 1.0,
         "filename": "test.mp3",
         "genre": "techno",
-        "path": "/fake/path/test.mp3"
+        "path": "/fake/path/test.mp3",
     }
 
 
@@ -32,7 +32,7 @@ def test_extract_features_shape(processor, sample_audio):
 def test_extract_features_metadata(processor, sample_audio):
     result = processor.extract_features(sample_audio)
     metadata = result["metadata"]
-    
+
     assert metadata["filename"] == "test.mp3"
     assert metadata["genre"] == "techno"
     assert metadata["duration"] == 1.0
@@ -51,11 +51,11 @@ def test_process_batch(processor):
             "duration": 1.0,
             "filename": f"test{i}.mp3",
             "genre": "techno",
-            "path": f"/fake/path/test{i}.mp3"
+            "path": f"/fake/path/test{i}.mp3",
         }
         for i in range(3)
     ]
-    
+
     results = processor.process_batch(audio_list)
     assert len(results) == 3
     assert all(r["features"].shape == (45,) for r in results)

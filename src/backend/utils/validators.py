@@ -4,20 +4,20 @@ import re
 
 
 def validate_audio_file(filename, file_size, max_size_mb=10):
-    allowed = ['.mp3', '.wav', '.flac']
+    allowed = [".mp3", ".wav", ".flac"]
     ext = Path(filename).suffix.lower()
-    
+
     if ext not in allowed:
         raise HTTPException(400, f"Invalid file type. Allowed: {allowed}")
-    
+
     max_bytes = max_size_mb * 1024 * 1024
     if file_size > max_bytes:
         raise HTTPException(413, f"File too large. Max: {max_size_mb}MB")
-    
-    safe_filename = re.sub(r'[^\w\s.-]', '', filename)
-    if '..' in filename or '/' in filename or '\\' in filename:
+
+    safe_filename = re.sub(r"[^\w\s.-]", "", filename)
+    if ".." in filename or "/" in filename or "\\" in filename:
         raise HTTPException(400, "Invalid filename characters")
-    
+
     return True
 
 

@@ -11,7 +11,7 @@ from utils.feature_extractors import (
     extract_zero_crossing_rate,
     extract_tempo,
     extract_rms,
-    extract_spectral_bandwidth
+    extract_spectral_bandwidth,
 )
 
 
@@ -33,18 +33,20 @@ class AudioProcessor:
         rms_mean = extract_rms(audio)
         bandwidth_mean = extract_spectral_bandwidth(audio, sr)
 
-        feature_vector = np.concatenate([
-            mfcc_mean,
-            mfcc_std,
-            chroma_mean,
-            [centroid_mean],
-            [centroid_std],
-            [rolloff_mean],
-            [zcr_mean],
-            [tempo],
-            [rms_mean],
-            [bandwidth_mean]
-        ])
+        feature_vector = np.concatenate(
+            [
+                mfcc_mean,
+                mfcc_std,
+                chroma_mean,
+                [centroid_mean],
+                [centroid_std],
+                [rolloff_mean],
+                [zcr_mean],
+                [tempo],
+                [rms_mean],
+                [bandwidth_mean],
+            ]
+        )
 
         return {
             "features": feature_vector,
@@ -52,8 +54,8 @@ class AudioProcessor:
                 "filename": audio_data["filename"],
                 "genre": audio_data["genre"],
                 "duration": audio_data["duration"],
-                "path": audio_data["path"]
-            }
+                "path": audio_data["path"],
+            },
         }
 
     def process_batch(self, audio_list):

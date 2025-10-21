@@ -14,7 +14,13 @@ from src.ingestion.audio_processor import AudioProcessor
 from src.embeddings.audio_embedder import AudioEmbedder
 from src.storage.chroma_client import ChromaStorage
 from src.models.clustering import AudioClusterer
-from src.api.models import SearchResponse, GenreStats, HealthResponse, QueryInfo, SearchResult
+from src.api.models import (
+    SearchResponse,
+    GenreStats,
+    HealthResponse,
+    QueryInfo,
+    SearchResult,
+)
 from utils.validators import validate_audio_file, validate_search_params
 from config.settings import CHROMA_DB_DIR, PROCESSED_DIR, MODELS_DIR
 
@@ -26,7 +32,7 @@ app = FastAPI(
     description="Sistema de búsqueda semántica para samples de música electrónica",
     version="2.0.0",
     docs_url="/docs",
-    redoc_url="/redoc"
+    redoc_url="/redoc",
 )
 
 app.add_middleware(
@@ -50,7 +56,14 @@ def root():
     return HealthResponse(
         status="online",
         message="Audio Samples Semantic Search API v2.0",
-        endpoints=["/stats", "/search", "/clusters", "/search-by-filters", "/ingest", "/docs"]
+        endpoints=[
+            "/stats",
+            "/search",
+            "/clusters",
+            "/search-by-filters",
+            "/ingest",
+            "/docs",
+        ],
     )
 
 
@@ -60,15 +73,13 @@ def get_stats():
     try:
         all_data = storage.get_all_samples()
         genres = {}
-        
+
         for meta in all_data["metadatas"]:
             genre = meta["genre"]
             genres[genre] = genres.get(genre, 0) + 1
-        
+
         return GenreStats(
-            total_samples=storage.count(),
-            genres=genres,
-            embedding_dimension=45
+            total_samples=storage.count(), genres=genres, embedding_dimension=45
         )
     except Exception as e:
         logger.error(f"Error getting stats: {e}")
@@ -78,51 +89,50 @@ def get_stats():
 @app.post("/search", response_model=SearchResponse)
 async def search_similar(
     file: UploadFile = File(..., description="Audio file (MP3/WAV/FLAC, max 10MB)"),
-    n_results: int = Query(5, ge=1, le=20, description="Number of results to return")
+    n_results: int = Query(5, ge=1, le=20, description="Number of results to return"),
 ):
     """Search for similar audio samples using semantic similarity"""
     validate_search_params(n_results)
-    
+
     content = await file.read()
     file_size = len(content)
-    
+
     validate_audio_file(file.filename, file_size)
-    
-    with tempfile.NamedTemporaryFile(delete=False, suffix=Path(file.filename).suffix) as tmp:
+
+    with tempfile.NamedTemporaryFile(
+        delete=False, suffix=Path(file.filename).suffix
+    ) as tmp:
         tmp.write(content)
         tmp_path = Path(tmp.name)
-    
+
     try:
         loader = AudioLoader(str(tmp_path.parent))
         audio_data = loader.load_audio(tmp_path)
-        
+
         if not audio_data:
             raise HTTPException(400, "Failed to load audio file")
-        
+
         processed = processor.extract_features(audio_data)
         query_embedding = embedder.generate_embedding(processed)
-        
+
         results = storage.search_similar(query_embedding, n_results)
-        
+
         search_results = [
             SearchResult(
-                filename=meta["filename"],
-                genre=meta["genre"],
-                distance=float(dist)
+                filename=meta["filename"], genre=meta["genre"], distance=float(dist)
             )
             for meta, dist in zip(results["metadatas"][0], results["distances"][0])
         ]
-        
-        logger.info(f"Search completed: {file.filename}, found {len(search_results)} results")
-        
-        return SearchResponse(
-            query=QueryInfo(
-                filename=file.filename,
-                duration=audio_data["duration"]
-            ),
-            results=search_results
+
+        logger.info(
+            f"Search completed: {file.filename}, found {len(search_results)} results"
         )
-        
+
+        return SearchResponse(
+            query=QueryInfo(filename=file.filename, duration=audio_data["duration"]),
+            results=search_results,
+        )
+
     except HTTPException:
         raise
     except Exception as e:
@@ -141,21 +151,17 @@ def get_clusters():
     """
     try:
         clusters_file = PROCESSED_DIR / "clusters_analysis.json"
-        
+
         if not clusters_file.exists():
             raise HTTPException(
-                404, 
-                "Clustering data not found. Run scripts/analyze_clusters.py first"
+                404, "Clustering data not found. Run scripts/analyze_clusters.py first"
             )
-        
-        with open(clusters_file, 'r') as f:
+
+        with open(clusters_file, "r") as f:
             clusters_info = json.load(f)
-        
-        return {
-            "total_clusters": len(clusters_info),
-            "clusters": clusters_info
-        }
-    
+
+        return {"total_clusters": len(clusters_info), "clusters": clusters_info}
+
     except HTTPException:
         raise
     except Exception as e:
@@ -167,7 +173,7 @@ def get_clusters():
 def search_by_filters(
     genre: str = Query(None, description="Filter by genre"),
     cluster: int = Query(None, description="Filter by cluster ID"),
-    limit: int = Query(20, ge=1, le=100, description="Max results")
+    limit: int = Query(20, ge=1, le=100, description="Max results"),
 ):
     """
     Search samples using filters (genre, cluster).
@@ -175,36 +181,31 @@ def search_by_filters(
     """
     try:
         metadata_file = PROCESSED_DIR / "metadata_with_clusters.json"
-        
+
         if not metadata_file.exists():
             raise HTTPException(
-                404,
-                "Metadata not found. Run scripts/analyze_clusters.py first"
+                404, "Metadata not found. Run scripts/analyze_clusters.py first"
             )
-        
-        with open(metadata_file, 'r') as f:
+
+        with open(metadata_file, "r") as f:
             all_metadata = json.load(f)
-        
+
         filtered = all_metadata
-        
+
         if genre:
-            filtered = [m for m in filtered if m.get('genre') == genre]
-        
+            filtered = [m for m in filtered if m.get("genre") == genre]
+
         if cluster is not None:
-            filtered = [m for m in filtered if m.get('cluster') == cluster]
-        
+            filtered = [m for m in filtered if m.get("cluster") == cluster]
+
         filtered = filtered[:limit]
-        
+
         return {
             "total_results": len(filtered),
-            "filters_applied": {
-                "genre": genre,
-                "cluster": cluster,
-                "limit": limit
-            },
-            "results": filtered
+            "filters_applied": {"genre": genre, "cluster": cluster, "limit": limit},
+            "results": filtered,
         }
-    
+
     except HTTPException:
         raise
     except Exception as e:
@@ -215,7 +216,7 @@ def search_by_filters(
 @app.post("/ingest")
 async def ingest_sample(
     file: UploadFile = File(..., description="Audio file to add to database"),
-    genre: str = Query(..., description="Genre label for the sample")
+    genre: str = Query(..., description="Genre label for the sample"),
 ):
     """
     Ingest a new audio sample into the database.
@@ -223,54 +224,54 @@ async def ingest_sample(
     """
     content = await file.read()
     file_size = len(content)
-    
+
     validate_audio_file(file.filename, file_size)
-    
-    with tempfile.NamedTemporaryFile(delete=False, suffix=Path(file.filename).suffix) as tmp:
+
+    with tempfile.NamedTemporaryFile(
+        delete=False, suffix=Path(file.filename).suffix
+    ) as tmp:
         tmp.write(content)
         tmp_path = Path(tmp.name)
-    
+
     try:
         loader = AudioLoader(str(tmp_path.parent))
         audio_data = loader.load_audio(tmp_path)
-        
+
         if not audio_data:
             raise HTTPException(400, "Failed to load audio file")
-        
-        audio_data['genre'] = genre
-        
+
+        audio_data["genre"] = genre
+
         processed = processor.extract_features(audio_data)
         embedding = embedder.generate_embedding(processed)
-        
+
         model_path = MODELS_DIR / "clusterer_kmeans.pkl"
         if model_path.exists():
             clusterer = AudioClusterer.load(model_path)
             cluster_id = int(clusterer.predict([embedding])[0])
         else:
             cluster_id = -1
-        
+
         sample_id = f"sample_{storage.count() + 1}"
-        
-        metadata = processed['metadata']
-        metadata['cluster'] = cluster_id
-        
+
+        metadata = processed["metadata"]
+        metadata["cluster"] = cluster_id
+
         storage.add_samples(
-            embeddings=[embedding],
-            metadata=[metadata],
-            ids=[sample_id]
+            embeddings=[embedding], metadata=[metadata], ids=[sample_id]
         )
-        
+
         logger.info(f"Ingested new sample: {file.filename} (cluster: {cluster_id})")
-        
+
         return {
             "status": "success",
             "message": f"Sample {file.filename} added to database",
             "sample_id": sample_id,
             "cluster": cluster_id,
             "genre": genre,
-            "total_samples": storage.count()
+            "total_samples": storage.count(),
         }
-        
+
     except HTTPException:
         raise
     except Exception as e:
@@ -283,4 +284,5 @@ async def ingest_sample(
 
 if __name__ == "__main__":
     import uvicorn
+
     uvicorn.run(app, host="0.0.0.0", port=8001)

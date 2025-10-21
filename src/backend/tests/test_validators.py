@@ -34,6 +34,6 @@ def test_validate_search_params_valid():
 def test_validate_search_params_invalid():
     with pytest.raises(HTTPException):
         validate_search_params(0)
-    
+
     with pytest.raises(HTTPException):
         validate_search_params(21)

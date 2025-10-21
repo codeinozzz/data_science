@@ -5,7 +5,9 @@ from typing import List, Dict
 class SearchResult(BaseModel):
     filename: str
     genre: str
-    distance: float = Field(ge=0.0, description="Cosine distance (lower is more similar)")
+    distance: float = Field(
+        ge=0.0, description="Cosine distance (lower is more similar)"
+    )
 
 
 class QueryInfo(BaseModel):

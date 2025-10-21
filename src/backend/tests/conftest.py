@@ -10,7 +10,7 @@ def sample_audio_data():
         "duration": 1.0,
         "filename": "test.mp3",
         "genre": "techno",
-        "path": "/fake/path/test.mp3"
+        "path": "/fake/path/test.mp3",
     }
 
 
@@ -25,5 +25,5 @@ def sample_metadata():
         "filename": "test.mp3",
         "genre": "techno",
         "duration": 1.0,
-        "path": "/fake/path/test.mp3"
+        "path": "/fake/path/test.mp3",
     }

@@ -1,3 +1,4 @@
+# Python
 __pycache__/
 *.py[cod]
 *$py.class
@@ -5,12 +6,31 @@ __pycache__/
 .Python
 env/
 venv/
+.venv/
+data/
+
+# Environment
 .env
-data/raw/
-data/processed/
-*.mp3
-*.wav
-.DS_Store
+
+# Data (regenerable)
+backend/data/raw/*.mp3
+backend/data/raw/*.wav
+backend/data/raw/*.flac
+backend/data/processed/
+backend/models/saved/
+backend/chroma_db/
+
+# Testing
+.pytest_cache/
+.coverage
+htmlcov/
+
+# IDE
 .vscode/
 .idea/
-data/
+*.swp
+*.swo
+.DS_Store
+
+# Logs
+*.log

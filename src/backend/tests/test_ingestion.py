@@ -10,10 +10,10 @@ from src.ingestion.audio_processor import AudioProcessor
 def main():
     data_path = Path(__file__).parent.parent / "data" / "raw"
 
-    print(f"Looking for data in: {data_path.absolute()}")
+    print(f"Data directory: {data_path.absolute()}")
 
     if not data_path.exists():
-        print(f"ERROR: Directory not found!")
+        print("ERROR: Directory not found")
         return
 
     loader = AudioLoader(str(data_path))
@@ -24,7 +24,7 @@ def main():
     print(f"Loaded: {len(all_audio)} audio files")
 
     if len(all_audio) == 0:
-        print("No audio files found.")
+        print("No audio files found")
         return
 
     genres = {}
@@ -39,7 +39,7 @@ def main():
     print("\nProcessing first sample...")
     processed = processor.extract_features(all_audio[0])
 
-    print(f"\nFeature vector shape: {processed['features'].shape}")
+    print(f"Feature vector shape: {processed['features'].shape}")
     print(f"Feature vector dimensions: {len(processed['features'])}")
     print(f"\nMetadata:")
     print(f"  Filename: {processed['metadata']['filename']}")

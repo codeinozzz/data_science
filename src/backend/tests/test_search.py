@@ -18,9 +18,9 @@ def main():
     embedder = AudioEmbedder()
     storage = ChromaStorage(persist_directory=str(db_path))
 
-    print(f"Database has {storage.count()} samples\n")
+    print(f"Database has {storage.count()} samples")
 
-    print("Loading a query sample...")
+    print("Loading query sample...")
     all_audio = loader.load_all()
     query_audio = all_audio[0]
 
@@ -29,7 +29,7 @@ def main():
     processed = processor.extract_features(query_audio)
     query_embedding = embedder.generate_embedding(processed)
 
-    print("\nSearching for similar samples...")
+    print("Searching for similar samples...")
     results = storage.search_similar(query_embedding, n_results=5)
 
     print("\nTop 5 similar samples:")
@@ -38,7 +38,7 @@ def main():
     ):
         print(f"{i}. {metadata['filename']}")
         print(f"   Genre: {metadata['genre']}")
-        print(f"   Distance: {distance:.4f}\n")
+        print(f"   Distance: {distance:.4f}")
 
 
 if __name__ == "__main__":

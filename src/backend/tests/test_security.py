@@ -31,15 +31,15 @@ def test_safe_path_traversal_attack():
 
 def test_validate_file_content_empty():
     with pytest.raises(HTTPException) as exc:
-        validate_file_content(b'', ['.mp3'])
+        validate_file_content(b"", [".mp3"])
     assert exc.value.status_code == 400
 
 
 def test_validate_file_content_mp3():
-    mp3_header = b'ID3' + b'\x00' * 100
-    assert validate_file_content(mp3_header, ['.mp3']) == True
+    mp3_header = b"ID3" + b"\x00" * 100
+    assert validate_file_content(mp3_header, [".mp3"]) == True
 
 
 def test_validate_file_content_wav():
-    wav_header = b'RIFF' + b'\x00' * 4 + b'WAVE' + b'\x00' * 100
-    assert validate_file_content(wav_header, ['.wav']) == True
+    wav_header = b"RIFF" + b"\x00" * 4 + b"WAVE" + b"\x00" * 100
+    assert validate_file_content(wav_header, [".wav"]) == True
