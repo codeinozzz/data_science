@@ -16,7 +16,7 @@ class ChromaStorage:
         chroma_port = os.getenv("CHROMA_PORT", "8000")
 
         if chroma_host == "chromadb":
-            self.client = chromadb.HttpClient(host=chroma_host, port=int(chroma_port))
+            self.client = chromadb.HttpClient(host=chroma_host, port=str(chroma_port))
         else:
             self.client = chromadb.PersistentClient(path=persist_directory)
 

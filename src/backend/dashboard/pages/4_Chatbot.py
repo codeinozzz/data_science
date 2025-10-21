@@ -3,6 +3,7 @@ import requests
 import json
 import sys
 from pathlib import Path
+import requests  # type: ignore
 
 sys.path.append(str(Path(__file__).parent.parent.parent))
 
@@ -253,7 +254,7 @@ if st.button("🗑️ Clear Chat", use_container_width=False):
     st.session_state.chat_history = [
         {
             "role": "bot",
-            "message": "👋 Chat cleared. Type 'help' to see available commands.",
+            "message": "Chat cleared. Type 'help' to see available commands.",
         }
     ]
     st.rerun()

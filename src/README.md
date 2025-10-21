@@ -84,16 +84,16 @@ graph TB
     C --> C1
     C --> C2
     C --> C3
-    
+
     C1 -->|Process| D
     D -->|Extract| E
     E -->|Normalize| F
     F -->|Query| G
     G -->|Search| H
-    
+
     H -->|Results| C1
     C1 -->|JSON Response| B
-    
+
     H -.->|Train| I
     H -.->|Train| J
     I -.->|Detect| C2
@@ -111,43 +111,43 @@ graph TB
 ```mermaid
 flowchart TD
     A[Audio File<br/>MP3/WAV/FLAC] --> B[Audio Loader<br/>librosa.load]
-    
+
     B --> C{Valid Audio?}
     C -->|No| D[Skip File]
     C -->|Yes| E[Raw Audio Array<br/>22.05kHz Sample Rate]
-    
+
     E --> F[Feature Extraction<br/>AudioProcessor]
-    
+
     F --> G[MFCC Features<br/>13 coefficients]
     F --> H[Spectral Features<br/>centroid, rolloff, bandwidth]
     F --> I[Temporal Features<br/>ZCR, RMS, Tempo]
     F --> J[Chroma Features<br/>12 pitch classes]
-    
+
     G --> K[Mean: 13 values]
     G --> L[Std: 13 values]
     H --> M[3 values]
     I --> N[3 values]
     J --> O[12 values]
-    
+
     K --> P[Concatenate Features<br/>45-dimensional vector]
     L --> P
     M --> P
     N --> P
     O --> P
-    
+
     P --> Q[Z-Score Normalization<br/>AudioEmbedder]
-    
+
     Q --> R[Normalized Embedding<br/>45 dimensions]
-    
+
     R --> S[Store in ChromaDB<br/>with metadata]
-    
+
     S --> T[(Vector Database<br/>Cosine Similarity Index)]
-    
+
     T --> U[Query Interface]
     U --> V[Semantic Search]
     U --> W[Anomaly Detection]
     U --> X[Genre Classification]
-    
+
     style A fill:#e1f5ff
     style R fill:#e1ffe1
     style T fill:#ffe1e1
@@ -166,39 +166,39 @@ graph TB
                 C1[ChromaDB Server<br/>chromadb/chroma:0.4.15<br/>Port 8000]
                 C1V[/chroma/chroma]
             end
-            
+
             subgraph "Backend Container"
                 B1[FastAPI Application<br/>python:3.10-slim<br/>Port 8001]
                 B1V1[/app/data]
             end
         end
-        
+
         subgraph "Host Volumes"
             V1[(chroma_data<br/>Persistent Volume)]
             V2[backend/data/<br/>Host Directory]
         end
-        
+
         subgraph "External Access"
             P1[localhost:8000]
             P2[localhost:8001]
         end
     end
-    
+
     subgraph "External Services"
         FS[Freesound API]
     end
-    
+
     C1V -.->|Mount| V1
     B1V1 -.->|Mount| V2
-    
+
     B1 -->|HTTP Client| C1
     B1 -->|API Calls| FS
-    
+
     P1 -.->|Port Mapping| C1
     P2 -.->|Port Mapping| B1
-    
+
     U[User] -->|HTTP| P2
-    
+
     style C1 fill:#e1ffe1
     style B1 fill:#ffe1e1
     style V1 fill:#fff4e1
@@ -625,7 +625,3 @@ ports:
 - Audio Samples: Freesound.org
 
 ---
-
-## License
-
-MIT License

@@ -4,6 +4,8 @@ import requests
 from pathlib import Path
 from typing import List, Dict
 from dotenv import load_dotenv
+import requests  # type: ignore
+
 
 load_dotenv()
 
@@ -16,7 +18,7 @@ class FreesoundDownloader:
         self.headers = {"Authorization": f"Token {api_key}"}
 
     def search_sounds(self, query: str, max_results: int = 50) -> List[Dict]:
-        sounds = []
+        sounds: list[dict] = []
         page = 1
 
         while len(sounds) < max_results:
@@ -32,7 +34,7 @@ class FreesoundDownloader:
                 response = requests.get(
                     f"{self.base_url}/search/text/",
                     headers=self.headers,
-                    params=params,
+                    params=params,  # type: ignore
                     timeout=10,
                 )
 
@@ -123,7 +125,7 @@ def main():
 
     print(f"API Key loaded: {API_KEY[:10]}...")
 
-    OUTPUT_DIR = "../data/raw"
+    OUTPUT_DIR = "data/raw"
 
     queries = {
         "techno": [
@@ -168,13 +170,73 @@ def main():
             "trance pad",
             "trance riser",
         ],
+        "jazz": [
+            "jazz piano",
+            "jazz saxophone",
+            "jazz trumpet",
+            "jazz bass",
+            "jazz drums",
+            "jazz guitar",
+            "jazz cymbal",
+            "jazz vocal",
+        ],
+        "rock": [
+            "rock guitar",
+            "rock drum",
+            "rock bass",
+            "rock vocal",
+            "rock snare",
+            "rock kick",
+            "rock cymbal",
+            "rock riff",
+        ],
+        "classical": [
+            "classical piano",
+            "classical violin",
+            "classical cello",
+            "classical flute",
+            "classical orchestra",
+            "classical strings",
+            "classical brass",
+            "classical timpani",
+        ],
+        "experimental": [
+            "noise",
+            "glitch",
+            "field recording",
+            "abstract sound",
+            "industrial sound",
+            "atonal",
+            "avant garde",
+            "sound design",
+        ],
+        "world": [
+            "ethnic percussion",
+            "didgeridoo",
+            "sitar",
+            "tabla",
+            "african drum",
+            "shakuhachi",
+            "gamelan",
+            "throat singing",
+        ],
+        "hip_hop": [
+            "hip hop beat",
+            "rap vocal",
+            "808 bass",
+            "trap snare",
+            "hip hop kick",
+            "vinyl scratch",
+            "boom bap",
+            "hip hop hi hat",
+        ],
     }
 
     print(f"\nOutput directory: {os.path.abspath(OUTPUT_DIR)}")
     print("Starting download...\n")
 
     downloader = FreesoundDownloader(API_KEY, OUTPUT_DIR)
-    total = downloader.download_dataset(queries, samples_per_query=10)
+    total = downloader.download_dataset(queries, samples_per_query=5)
 
     print(f"\n{'='*50}")
     print(f"Download complete: {total} samples downloaded")

@@ -49,7 +49,7 @@ try:
 
     with col1:
         st.subheader("Genre Distribution")
-        genre_counts = {}
+        genre_counts: dict[str, int] = {}
         for m in metadata:
             genre = m["genre"]
             genre_counts[genre] = genre_counts.get(genre, 0) + 1
