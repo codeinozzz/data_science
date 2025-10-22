@@ -43,27 +43,29 @@ def main():
 
     centroids_2d = None
     centroid_info = []
-    
+
     if clusterer.method == "kmeans":
         centroids_2d = []
-        
+
         for cluster_id in range(clusterer.n_clusters):
             mask = clusterer.labels == cluster_id
             cluster_points = embeddings_2d[mask]
-            
+
             if len(cluster_points) > 0:
                 centroid = cluster_points.mean(axis=0)
                 centroids_2d.append(centroid)
-                
+
                 radius = np.mean(np.linalg.norm(cluster_points - centroid, axis=1))
-                
-                centroid_info.append({
-                    "cluster_id": int(cluster_id),
-                    "centroid_x": float(centroid[0]),
-                    "centroid_y": float(centroid[1]),
-                    "n_samples": int(np.sum(mask)),
-                    "avg_radius": float(radius)
-                })
+
+                centroid_info.append(
+                    {
+                        "cluster_id": int(cluster_id),
+                        "centroid_x": float(centroid[0]),
+                        "centroid_y": float(centroid[1]),
+                        "n_samples": int(np.sum(mask)),
+                        "avg_radius": float(radius),
+                    }
+                )
 
         centroids_2d = np.array(centroids_2d)
 
@@ -72,7 +74,7 @@ def main():
 
     predictions = detector.predict(embeddings)
     scores = detector.model.score_samples(embeddings)
-    
+
     anomaly_indices = np.where(predictions == -1)[0]
 
     model_path = MODELS_DIR / f"clusterer_{CLUSTERING_METHOD}.pkl"

@@ -26,7 +26,7 @@ def main():
     anomaly_indices = np.where(predictions == -1)[0]
 
     metadata_file = PROCESSED_DIR / "metadata_with_clusters.json"
-    
+
     if metadata_file.exists():
         with open(metadata_file, "r") as f:
             metadata_enhanced = json.load(f)

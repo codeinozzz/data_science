@@ -25,31 +25,37 @@ try:
 
     centroids_2d = None
     has_centroids = False
-    
+
     try:
         centroids_2d = np.load(PROCESSED_DIR / "centroids_2d.npy")
         has_centroids = True
     except:
         pass
 
-    df = pd.DataFrame({
-        "x": embeddings_2d[:, 0],
-        "y": embeddings_2d[:, 1],
-        "cluster": labels,
-        "genre": [m["genre"] for m in metadata],
-        "filename": [m["filename"] for m in metadata],
-        "duration": [m["duration"] for m in metadata],
-        "is_anomaly": [m.get("is_anomaly", False) for m in metadata],
-        "anomaly_score": [m.get("anomaly_score", 0) for m in metadata]
-    })
+    df = pd.DataFrame(
+        {
+            "x": embeddings_2d[:, 0],
+            "y": embeddings_2d[:, 1],
+            "cluster": labels,
+            "genre": [m["genre"] for m in metadata],
+            "filename": [m["filename"] for m in metadata],
+            "duration": [m["duration"] for m in metadata],
+            "is_anomaly": [m.get("is_anomaly", False) for m in metadata],
+            "anomaly_score": [m.get("anomaly_score", 0) for m in metadata],
+        }
+    )
 
     st.sidebar.header("Visualization Options")
     color_by = st.sidebar.radio("Color by:", ["Cluster", "Genre"], index=0)
 
     st.sidebar.markdown("---")
     st.sidebar.subheader("Show/Hide Elements")
-    
-    show_centroids = st.sidebar.checkbox("Show centroids", value=has_centroids) if has_centroids else False
+
+    show_centroids = (
+        st.sidebar.checkbox("Show centroids", value=has_centroids)
+        if has_centroids
+        else False
+    )
     show_anomalies = st.sidebar.checkbox("Highlight anomalies", value=True)
 
     st.sidebar.markdown("---")
@@ -109,19 +115,18 @@ try:
             go.Scatter(
                 x=df_anomalies["x"],
                 y=df_anomalies["y"],
-                mode='markers',
-                name='Anomalies',
+                mode="markers",
+                name="Anomalies",
                 marker=dict(
                     size=12,
-                    color='#FF4B4B',
+                    color="#FF4B4B",
                     opacity=0.9,
-                    line=dict(width=2, color='darkred'),
-                    symbol='diamond'
+                    line=dict(width=2, color="darkred"),
+                    symbol="diamond",
                 ),
                 text=df_anomalies["filename"],
                 customdata=df_anomalies["anomaly_score"],
-                hovertemplate='<b>%{text}</b><br>Genre: ' + df_anomalies["genre"] + '<br>Cluster: ' + df_anomalies["cluster"].astype(str) + '<br>Anomaly Score: %{customdata:.4f}<extra></extra>',
-                showlegend=True
+                hovertemplate="<b>%{text}</b><br>Genre: " + df_anomalies["genre"] + "<br>Cluster: " + df_anomalies["cluster"].astype(str) + "<br>Anomaly Score: %{customdata:.4f}<extra></extra>",  # type: ignore[operator]
             )
         )
 
@@ -137,19 +142,19 @@ try:
             go.Scatter(
                 x=centroids_to_show[:, 0],
                 y=centroids_to_show[:, 1],
-                mode='markers+text',
-                name='Centroids',
+                mode="markers+text",
+                name="Centroids",
                 marker=dict(
-                    symbol='x',
+                    symbol="x",
                     size=25,
-                    color='black',
-                    line=dict(width=4, color='yellow')
+                    color="black",
+                    line=dict(width=4, color="yellow"),
                 ),
-                text=[f'C{i}' for i in cluster_ids],
-                textposition='top center',
-                textfont=dict(size=14, color='black', family='Arial Black'),
-                hovertemplate='<b>Centroid %{text}</b><br>x: %{x:.2f}<br>y: %{y:.2f}<extra></extra>',
-                showlegend=True
+                text=[f"C{i}" for i in cluster_ids],
+                textposition="top center",
+                textfont=dict(size=14, color="black", family="Arial Black"),
+                hovertemplate="<b>Centroid %{text}</b><br>x: %{x:.2f}<br>y: %{y:.2f}<extra></extra>",
+                showlegend=True,
             )
         )
 
@@ -164,8 +169,8 @@ try:
             y=0.99,
             xanchor="right",
             x=0.99,
-            bgcolor="rgba(255,255,255,0.8)"
-        )
+            bgcolor="rgba(255,255,255,0.8)",
+        ),
     )
 
     st.plotly_chart(fig, use_container_width=True)
@@ -173,18 +178,22 @@ try:
     st.markdown("---")
 
     col1, col2, col3, col4 = st.columns(4)
-    
+
     with col1:
         st.metric("Total Samples", len(df_filtered))
-    
+
     with col2:
         st.metric("Clusters", df_filtered["cluster"].nunique())
-    
+
     with col3:
         st.metric("Anomalies", df_filtered["is_anomaly"].sum())
-    
+
     with col4:
-        pct = (df_filtered["is_anomaly"].sum() / len(df_filtered) * 100) if len(df_filtered) > 0 else 0
+        pct = (
+            (df_filtered["is_anomaly"].sum() / len(df_filtered) * 100)
+            if len(df_filtered) > 0
+            else 0
+        )
         st.metric("Anomaly Rate", f"{pct:.1f}%")
 
     st.markdown("---")
@@ -193,37 +202,55 @@ try:
 
     with col1:
         st.subheader("Cluster Centroids")
-        
+
         if has_centroids:
             centroid_info = []
             for cluster_id in range(len(centroids_2d)):
                 mask = labels == cluster_id
                 n_samples = np.sum(mask)
-                anomalies_in_cluster = sum(m.get("is_anomaly", False) and m.get("cluster") == cluster_id for m in metadata)
-                genres_in_cluster = [m["genre"] for m, in_cluster in zip(metadata, mask) if in_cluster]
-                most_common_genre = max(set(genres_in_cluster), key=genres_in_cluster.count) if genres_in_cluster else "N/A"
-                
-                centroid_info.append({
-                    "Cluster": f"C{cluster_id}",
-                    "Samples": n_samples,
-                    "Anomalies": anomalies_in_cluster,
-                    "Main Genre": most_common_genre
-                })
-            
-            st.dataframe(pd.DataFrame(centroid_info), use_container_width=True, hide_index=True)
+                anomalies_in_cluster = sum(
+                    m.get("is_anomaly", False) and m.get("cluster") == cluster_id
+                    for m in metadata
+                )
+                genres_in_cluster = [
+                    m["genre"] for m, in_cluster in zip(metadata, mask) if in_cluster
+                ]
+                most_common_genre = (
+                    max(set(genres_in_cluster), key=genres_in_cluster.count)
+                    if genres_in_cluster
+                    else "N/A"
+                )
+
+                centroid_info.append(
+                    {
+                        "Cluster": f"C{cluster_id}",
+                        "Samples": n_samples,
+                        "Anomalies": anomalies_in_cluster,
+                        "Main Genre": most_common_genre,
+                    }
+                )
+
+            st.dataframe(
+                pd.DataFrame(centroid_info), use_container_width=True, hide_index=True
+            )
         else:
             st.info("Run KMeans clustering to see centroids")
 
     with col2:
         st.subheader("Top Anomalies")
         df_anom = df_filtered[df_filtered["is_anomaly"]].sort_values("anomaly_score")
-        
+
         if len(df_anom) > 0:
-            st.dataframe(df_anom[["filename", "genre", "cluster", "anomaly_score"]].head(10), use_container_width=True, hide_index=True)
+            st.dataframe(
+                df_anom[["filename", "genre", "cluster", "anomaly_score"]].head(10),
+                use_container_width=True,
+                hide_index=True,
+            )
         else:
             st.info("No anomalies in filtered data")
 
 except Exception as e:
     st.error(f"Error: {str(e)}")
     import traceback
+
     st.code(traceback.format_exc())

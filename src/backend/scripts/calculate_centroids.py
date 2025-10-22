@@ -14,38 +14,40 @@ def main():
     labels = np.load(PROCESSED_DIR / "cluster_labels.npy")
 
     model_path = MODELS_DIR / "clusterer_kmeans.pkl"
-    
+
     if not model_path.exists():
         return
 
     clusterer = AudioClusterer.load(model_path)
-    
+
     if clusterer.method != "kmeans":
         return
 
     centroids_2d = []
     centroid_info = []
-    
+
     for cluster_id in range(clusterer.n_clusters):
         mask = labels == cluster_id
         cluster_points = embeddings_2d[mask]
-        
+
         if len(cluster_points) > 0:
             centroid = cluster_points.mean(axis=0)
             centroids_2d.append(centroid)
-            
+
             std_dev = cluster_points.std(axis=0)
             radius = np.mean(np.linalg.norm(cluster_points - centroid, axis=1))
-            
-            centroid_info.append({
-                "cluster_id": int(cluster_id),
-                "centroid_x": float(centroid[0]),
-                "centroid_y": float(centroid[1]),
-                "n_samples": int(np.sum(mask)),
-                "std_x": float(std_dev[0]),
-                "std_y": float(std_dev[1]),
-                "avg_radius": float(radius)
-            })
+
+            centroid_info.append(
+                {
+                    "cluster_id": int(cluster_id),
+                    "centroid_x": float(centroid[0]),
+                    "centroid_y": float(centroid[1]),
+                    "n_samples": int(np.sum(mask)),
+                    "std_x": float(std_dev[0]),
+                    "std_y": float(std_dev[1]),
+                    "avg_radius": float(radius),
+                }
+            )
 
     centroids_2d = np.array(centroids_2d)
 
